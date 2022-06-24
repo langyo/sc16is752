@@ -465,9 +465,9 @@ where
     }
 
     pub fn fifo_available_data(&mut self, channel: Channel) -> Result<u8, E> {
-        if self.fifo[channel as usize] == 0 {
-            self.fifo[channel as usize] = self.read_register(channel, REG_RXLVL)?;
-        }
+        // if self.fifo[channel as usize] == 0 {
+        self.fifo[channel as usize] = self.read_register(channel, REG_RXLVL)?;
+        // }
         Ok(self.fifo[channel as usize])
     }
 
