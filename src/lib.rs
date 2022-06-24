@@ -5,7 +5,7 @@
 
 //! This is a doc
 ///
-use embedded_hal::digital::PinState;
+// use embedded_hal::digital::PinState;
 use embedded_hal::i2c::{blocking::I2c, Error};
 
 // const ADDRESS_AA: u8 = 0x90;
@@ -116,16 +116,16 @@ impl core::fmt::Display for PinMode {
     }
 }
 
-// #[derive(Debug)]
-// pub enum PinState {
-//     Low,
-//     High,
-// }
-// impl core::fmt::Display for PinState {
-//     fn fmt(&self, f: &mut core::fmt::Formatter) -> std::fmt::Result {
-//         write!(f, "{:?}", self)
-//     }
-// }
+#[derive(Debug)]
+pub enum PinState {
+    Low,
+    High,
+}
+impl core::fmt::Display for PinState {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
 
 #[allow(non_camel_case_types)]
 pub enum InterruptEventTest {
