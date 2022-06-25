@@ -17,7 +17,7 @@
 //!     println!("RX A = {:?}", device.read_byte(Channel::A)?);
 //!
 //!     for byte in b"This is channel A" {
-//!         device.write_byte(Channel::A, *byte)?;
+//!         device.write_byte(Channel::A, byte)?;
 //!     }
 //!     let mut buf_a: Vec<u8> = vec![];
 //!     for _ in 0..device.fifo_available_data(Channel::A)? {
@@ -25,6 +25,7 @@
 //!             Some(byte) => buf_a.push(byte),
 //!             None => break,
 //!         }
+//!     }
 //!     println!("RX UART A = {}", String::from_utf8_lossy(&buf_a));
 //!
 //!     thread::sleep(Duration::from_millis(250));
@@ -42,10 +43,7 @@
 //!         device.gpio_get_pin_state(GPIO::GPIO0)?
 //!     );
 //! ```
-///
-///
-///
-// use embedded_hal::digital::PinState;
+
 use embedded_hal::i2c::{blocking::I2c, Error};
 
 const CRYSTAL_FREQ: u32 = 1843200;
