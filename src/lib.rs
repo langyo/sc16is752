@@ -3,73 +3,52 @@
 // #![allow(dead_code)]
 // #![deny(missing_docs)]
 
-//! This is a doc
+//!
+//! # Example
+//!
+//! ```
+//!
+//! let mut device = SC16IS752::new(SC16IS750_ADDRESS, i2c)?;
+//! device.initalise(Channel::A, UartConfig::default().baudrate(9600))?;
+//! device.gpio_set_pin_mode(GPIO::GPIO0, PinMode::Output)?;
+//! device.flush(Channel::A)?;
+//! loop {
+//!     device.write_byte(Channel::A, "a".as_bytes()[0])?;
+//!     println!("RX A = {:?}", device.read_byte(Channel::A)?);
+//!
+//!     for byte in b"This is channel A" {
+//!         device.write_byte(Channel::A, *byte)?;
+//!     }
+//!     let mut buf_a: Vec<u8> = vec![];
+//!     for _ in 0..device.fifo_available_data(Channel::A)? {
+//!         match device.read_byte(Channel::A)? {
+//!             Some(byte) => buf_a.push(byte),
+//!             None => break,
+//!         }
+//!     println!("RX UART A = {}", String::from_utf8_lossy(&buf_a));
+//!
+//!     thread::sleep(Duration::from_millis(250));
+//!     println!("Testing GPIO states");
+//!     device.gpio_set_pin_state(GPIO::GPIO0, PinState::High)?;
+//!     println!(
+//!         "GPIO0 = {:?} (Output)",
+//!         device.gpio_get_pin_state(GPIO::GPIO0)?
+//!     );
+//!     println!("Set GPIO0 to low");
+//!     device.gpio_set_pin_state(GPIO::GPIO0, PinState::Low)?;
+//!     thread::sleep(Duration::from_millis(250));
+//!     println!(
+//!         "GPIO0 = {:?} (Output toggled)",
+//!         device.gpio_get_pin_state(GPIO::GPIO0)?
+//!     );
+//! ```
+///
+///
 ///
 // use embedded_hal::digital::PinState;
 use embedded_hal::i2c::{blocking::I2c, Error};
 
-// const ADDRESS_AA: u8 = 0x90;
-// const ADDRESS_AB: u8 = 0x92;
-// const ADDRESS_AC: u8 = 0x94;
-// const ADDRESS_AD: u8 = 0x96;
-// const ADDRESS_BA: u8 = 0x98;
-// const ADDRESS_BB: u8 = 0x9A;
-// const ADDRESS_BC: u8 = 0x9C;
-// const ADDRESS_BD: u8 = 0x9E;
-// const ADDRESS_CA: u8 = 0xA0;
-// const ADDRESS_CB: u8 = 0xA2;
-// const ADDRESS_CC: u8 = 0xA4;
-// const ADDRESS_CD: u8 = 0xA6;
-// const ADDRESS_DA: u8 = 0xA8;
-// const ADDRESS_DB: u8 = 0xAA;
-// const ADDRESS_DC: u8 = 0xAC;
-// const ADDRESS_DD: u8 = 0xAE;
-
-// General Registers
-const REG_RHR: u8 = 0x00;
-const REG_THR: u8 = 0x00;
-const REG_IER: u8 = 0x01;
-const REG_FCR: u8 = 0x02;
-const REG_IIR: u8 = 0x02;
-const REG_LCR: u8 = 0x03;
-const REG_MCR: u8 = 0x04;
-const REG_LSR: u8 = 0x05;
-const REG_MSR: u8 = 0x06;
-const REG_SPR: u8 = 0x07;
-const REG_TCR: u8 = 0x06;
-const REG_TLR: u8 = 0x07;
-const REG_TXLVL: u8 = 0x08;
-const REG_RXLVL: u8 = 0x09;
-const REG_IODIR: u8 = 0x0A;
-const REG_IOSTATE: u8 = 0x0B;
-const REG_IOINTENA: u8 = 0x0C;
-const REG_IOCONTROL: u8 = 0x0E;
-const REG_EFCR: u8 = 0x0F;
-
-// Special Registers
-const REG_DLL: u8 = 0x00;
-const REG_DLH: u8 = 0x01;
-const REG_EFR: u8 = 0x02;
-const REG_XON1: u8 = 0x04;
-const REG_XON2: u8 = 0x05;
-const REG_XOFF1: u8 = 0x06;
-const REG_XOFF2: u8 = 0x07;
-const INT_CTS: u8 = 0x80;
-const INT_RTS: u8 = 0x40;
-const INT_XOFF: u8 = 0x20;
-const INT_SLEEP: u8 = 0x10;
-const INT_MODEM: u8 = 0x08;
-const INT_LINE: u8 = 0x04;
-const INT_THR: u8 = 0x02;
-const INT_RHR: u8 = 0x01;
 const CRYSTAL_FREQ: u32 = 1843200;
-const PROTOCOL_I2C: u8 = 0;
-const PROTOCOL_SPI: u8 = 1;
-
-const CHANNEL_A: u8 = 0x00;
-const CHANNEL_B: u8 = 0x01;
-const CHANNEL_BOTH: u8 = 0x00;
-const DEFAULT_SPEED: u32 = 9600;
 
 /// UARTs Channel A (TXA/RXA) and Channel B (TXB/RXB)
 #[derive(Debug, Copy, Clone)]
@@ -188,6 +167,9 @@ pub struct UartConfig {
 
 impl UartConfig {
     /// Holds parameters for each individual UART
+    ///
+    /// # Example
+    /// let config UartConfig::new(9600, 8, Parity::None, 1);
     pub fn new(baud: u32, word_length: u8, parity: Parity, stop_bit: u8) -> Self {
         Self {
             /// Maximum baudrate is 115200
@@ -279,10 +261,10 @@ where
 
         let mut temp_line_control_register = self.read_register(channel, 0x03)?;
         temp_line_control_register |= 0x80;
-        self.write_register(channel, REG_LCR, temp_line_control_register)?;
+        self.write_register(channel, 0x03, temp_line_control_register)?;
 
-        self.write_register(channel, REG_DLL, divisor.try_into().unwrap())?;
-        self.write_register(channel, REG_DLH, (divisor >> 8).try_into().unwrap())?;
+        self.write_register(channel, 0x00, divisor.try_into().unwrap())?;
+        self.write_register(channel, 0x01, (divisor >> 8).try_into().unwrap())?;
 
         temp_line_control_register &= 0x7F;
         self.write_register(channel, 0x03, temp_line_control_register)?;
@@ -342,16 +324,16 @@ where
     }
 
     pub fn gpio_set_pin_state(&mut self, pin_number: GPIO, pin_state: PinState) -> Result<(), E> {
-        let mut temp_io_direction_register = self.read_register(Channel::A, REG_IOSTATE)?;
+        let mut temp_io_direction_register = self.read_register(Channel::A, 0x0B)?;
         match pin_state {
             PinState::High => temp_io_direction_register |= 0x01 << (pin_number as u8),
             PinState::Low => temp_io_direction_register &= !(0x01 << (pin_number as u8)),
         }
-        self.write_register(Channel::A, REG_IOSTATE, temp_io_direction_register)
+        self.write_register(Channel::A, 0x0B, temp_io_direction_register)
     }
 
     pub fn gpio_get_pin_state(&mut self, pin_number: GPIO) -> Result<PinState, E> {
-        let temp_iostate = self.read_register(Channel::A, REG_IOSTATE)?;
+        let temp_iostate = self.read_register(Channel::A, 0x0B)?;
 
         if (temp_iostate & (0x01 << (pin_number as u8))) == 0 {
             return Ok(PinState::Low);
@@ -360,29 +342,29 @@ where
     }
 
     pub fn gpio_get_port_state(&mut self) -> Result<u8, E> {
-        self.read_register(Channel::A, REG_IOSTATE)
+        self.read_register(Channel::A, 0x0B)
     }
 
     pub fn gpio_set_port_mode(&mut self, port_io: u8) -> Result<(), E> {
-        self.write_register(Channel::A, REG_IODIR, port_io)
+        self.write_register(Channel::A, 0x0A, port_io)
     }
 
     pub fn gpio_set_port_state(&mut self, port_state: u8) -> Result<(), E> {
-        self.write_register(Channel::A, REG_IOSTATE, port_state)
+        self.write_register(Channel::A, 0x0B, port_state)
     }
 
     pub fn set_pin_interrupt(&mut self, io_interrupt_enable_register: u8) -> Result<(), E> {
-        self.write_register(Channel::A, REG_IOINTENA, io_interrupt_enable_register)
+        self.write_register(Channel::A, 0x0C, io_interrupt_enable_register)
     }
 
     pub fn reset_device(&mut self) -> Result<(), E> {
-        let mut reg: u8 = self.read_register(Channel::A, REG_IOCONTROL)?;
+        let mut reg: u8 = self.read_register(Channel::A, 0x0E)?;
         reg |= 0x08;
-        self.write_register(Channel::A, REG_IOCONTROL, reg)
+        self.write_register(Channel::A, 0x0E, reg)
     }
 
     pub fn modem_pin(&mut self, state: bool) -> Result<(), E> {
-        let mut temp_io_control_register = self.read_register(Channel::A, REG_IOCONTROL)?;
+        let mut temp_io_control_register = self.read_register(Channel::A, 0x0E)?;
 
         if state {
             temp_io_control_register |= 0x02;
@@ -390,11 +372,11 @@ where
             temp_io_control_register &= 0xFD;
         }
 
-        self.write_register(Channel::A, REG_IOCONTROL, temp_io_control_register)
+        self.write_register(Channel::A, 0x0E, temp_io_control_register)
     }
 
     pub fn gpio_latch(&mut self, latch: bool) -> Result<(), E> {
-        let mut temp_io_control_register = self.read_register(Channel::A, REG_IOCONTROL)?;
+        let mut temp_io_control_register = self.read_register(Channel::A, 0x0E)?;
 
         if !latch {
             temp_io_control_register &= 0xFE;
@@ -402,7 +384,7 @@ where
             temp_io_control_register |= 0x01;
         }
 
-        self.write_register(Channel::A, REG_IOCONTROL, temp_io_control_register)
+        self.write_register(Channel::A, 0x0E, temp_io_control_register)
     }
 
     pub fn interrupt_control(
@@ -410,16 +392,16 @@ where
         channel: Channel,
         interrupt_enable_register: u8,
     ) -> Result<(), E> {
-        self.write_register(channel, REG_IER, interrupt_enable_register)
+        self.write_register(channel, 0x01, interrupt_enable_register)
     }
 
     pub fn interrupt_pending_test(&mut self, channel: Channel) -> Result<u8, E> {
-        let ipt = self.read_register(channel, REG_IIR)?;
+        let ipt = self.read_register(channel, 0x02)?;
         Ok(ipt & 0x01)
     }
 
     pub fn isr(&mut self, channel: Channel) -> Result<InterruptEventTest, E> {
-        let mut interrupt_identification_register = self.read_register(channel, REG_IIR)?;
+        let mut interrupt_identification_register = self.read_register(channel, 0x02)?;
         // interrupt_identification_register >>= 1;
         interrupt_identification_register &= 0x3E;
         match interrupt_identification_register {
@@ -436,25 +418,25 @@ where
     }
 
     pub fn fifo_enable(&mut self, channel: Channel, state: bool) -> Result<(), E> {
-        let mut fifo_control_register = self.read_register(channel, REG_FCR)?;
+        let mut fifo_control_register = self.read_register(channel, 0x02)?;
 
         if !state {
             fifo_control_register &= 0xFE;
         } else {
             fifo_control_register |= 0x01;
         }
-        self.write_register(channel, REG_FCR, fifo_control_register)
+        self.write_register(channel, 0x02, fifo_control_register)
     }
 
     pub fn fifo_reset(&mut self, channel: Channel, state: bool) -> Result<(), E> {
-        let mut temp_fcr = self.read_register(channel, REG_FCR)?;
+        let mut temp_fcr = self.read_register(channel, 0x02)?;
 
         if !state {
             temp_fcr |= 0x04;
         } else {
             temp_fcr |= 0x02;
         }
-        self.write_register(channel, REG_FCR, temp_fcr)
+        self.write_register(channel, 0x02, temp_fcr)
     }
 
     pub fn fifo_set_trigger_level(
@@ -468,45 +450,45 @@ where
         self.write_register(channel, 0x04, temp_reg)?; // SET MCR[2] to '1' to use TLR register or trigger level control in FCR
                                                        // register
 
-        temp_reg = self.read_register(channel, REG_EFR)?;
-        self.write_register(channel, REG_EFR, temp_reg | 0x10)?; // set ERF[4] to '1' to use the  enhanced features
+        temp_reg = self.read_register(channel, 0x02)?;
+        self.write_register(channel, 0x02, temp_reg | 0x10)?; // set ERF[4] to '1' to use the  enhanced features
 
         if !rx_fifo {
-            self.write_register(channel, REG_TLR, length << 4)?; // Tx FIFO trigger level setting
+            self.write_register(channel, 0x07, length << 4)?; // Tx FIFO trigger level setting
         } else {
-            self.write_register(channel, REG_TLR, length)?; // Rx FIFO Trigger level setting
+            self.write_register(channel, 0x07, length)?; // Rx FIFO Trigger level setting
         }
-        self.write_register(channel, REG_EFR, temp_reg) // restore EFR register
+        self.write_register(channel, 0x02, temp_reg) // restore EFR register
     }
 
     pub fn fifo_available_data(&mut self, channel: Channel) -> Result<u8, E> {
         // if self.fifo[channel as usize] == 0 {
-        self.fifo[channel as usize] = self.read_register(channel, REG_RXLVL)?;
+        self.fifo[channel as usize] = self.read_register(channel, 0x09)?;
         // }
         Ok(self.fifo[channel as usize])
     }
 
     pub fn fifo_available_space(&mut self, channel: Channel) -> Result<u8, E> {
-        self.read_register(channel, REG_TXLVL)
+        self.read_register(channel, 0x08)
     }
 
-    pub fn write_byte(&mut self, channel: Channel, val: u8) -> Result<(), E> {
+    pub fn write_byte(&mut self, channel: Channel, val: &[u8; 1]) -> Result<(), E> {
         let mut tmp_line_status_register: u8 = 0;
         while (tmp_line_status_register & 0x20) == 0 {
-            tmp_line_status_register = self.read_register(channel, REG_LSR)?;
+            tmp_line_status_register = self.read_register(channel, 0x05)?;
         }
-        self.write_register(channel, REG_THR, val)
+        self.write_register(channel, 0x00, val[0])
     }
 
     pub fn read_byte(&mut self, channel: Channel) -> Result<Option<u8>, E> {
         if self.fifo_available_data(channel)? == 0 {
-            println!("No data");
+            //println!("No data");
             return Ok(None);
         }
         // else if (self.fifo[channel as usize] > 0) {
         //     --fifo_available[channel];
         // }
-        Ok(Some(self.read_register(channel, REG_RHR)?))
+        Ok(Some(self.read_register(channel, 0x00)?))
     }
 
     pub fn enable_features(
@@ -557,7 +539,7 @@ where
         let mut tmp_line_status_register: u8 = 0;
 
         while (tmp_line_status_register & 0x20) == 0 {
-            tmp_line_status_register = self.read_register(channel, REG_LSR)?;
+            tmp_line_status_register = self.read_register(channel, 0x05)?;
         }
         Ok(())
     }
