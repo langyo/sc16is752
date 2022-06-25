@@ -202,6 +202,17 @@ impl UartConfig {
     }
 }
 
+impl Default for UartConfig {
+    fn default() -> Self {
+        UartConfig {
+            baud: 115200,
+            word_length: 8,
+            parity: Parity::NoParity,
+            stop_bit: 1,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct SC16IS752<I2C> {
     address: u8,
