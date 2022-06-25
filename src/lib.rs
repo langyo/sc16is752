@@ -213,6 +213,13 @@ impl Default for UartConfig {
     }
 }
 
+impl UartConfig {
+    fn baudrate(mut self, baud: u32) -> Self {
+        self.baud = baud;
+        self
+    }
+}
+
 #[derive(Debug)]
 pub struct SC16IS752<I2C> {
     address: u8,
