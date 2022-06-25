@@ -204,7 +204,7 @@ impl UartConfig {
 
 impl Default for UartConfig {
     fn default() -> Self {
-        UartConfig {
+        Self {
             baud: 115200,
             word_length: 8,
             parity: Parity::NoParity,
