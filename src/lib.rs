@@ -472,12 +472,12 @@ where
         self.read_register(channel, 0x08)
     }
 
-    pub fn write_byte(&mut self, channel: Channel, val: &[u8; 1]) -> Result<(), E> {
+    pub fn write_byte(&mut self, channel: Channel, val: &u8) -> Result<(), E> {
         let mut tmp_line_status_register: u8 = 0;
         while (tmp_line_status_register & 0x20) == 0 {
             tmp_line_status_register = self.read_register(channel, 0x05)?;
         }
-        self.write_register(channel, 0x00, val[0])
+        self.write_register(channel, 0x00, *val)
     }
 
     pub fn read_byte(&mut self, channel: Channel) -> Result<Option<u8>, E> {
