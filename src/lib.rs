@@ -200,6 +200,10 @@ impl UartConfig {
             stop_bit,
         }
     }
+    pub fn baudrate(mut self, baud: u32) -> Self {
+        self.baud = baud;
+        self
+    }
 }
 
 impl Default for UartConfig {
@@ -210,13 +214,6 @@ impl Default for UartConfig {
             parity: Parity::NoParity,
             stop_bit: 1,
         }
-    }
-}
-
-impl UartConfig {
-    fn baudrate(mut self, baud: u32) -> Self {
-        self.baud = baud;
-        self
     }
 }
 
