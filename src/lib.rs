@@ -44,7 +44,9 @@
 //!     );
 //! ```
 
+use embedded_hal as hal;
 use embedded_hal::i2c::{blocking::I2c, Error};
+use hal::nb;
 
 const CRYSTAL_FREQ: u32 = 1843200;
 
@@ -224,6 +226,7 @@ where
             peek_buf: [None; 2],
         })
     }
+
     /// Initalises a single UART using UartConfig struct
     pub fn initalise(&mut self, channel: Channel, config: UartConfig) -> Result<(), E> {
         self.fifo_enable(channel, true)?;
@@ -287,7 +290,7 @@ where
         stop_length: u8,
     ) -> Result<(), E> {
         let mut temp_line_control_register: u8 = self.read_register(channel, 0x03)?;
-        temp_line_control_register &= 0xC0; // Clear the lower six bit of line_control_register (line_control_register[0] to line_control_register[5]
+        temp_line_control_register &= 0xC0;
         {
             println!("line_control_register Register: {temp_line_control_register:#04x}");
         }
@@ -310,8 +313,8 @@ where
         }
         self.write_register(channel, 0x03, temp_line_control_register)
     }
-    // Use embedded_hal traits (feature = unproved)
-    /// This register is used to program the I/O pins direction. Bit 0 to bit 7 controls GPIO0 to GPIO7.
+
+    /// This register is used to set an I/O pin direction. Bit 0 to bit 7 controls GPIO0 to GPIO7.
     pub fn gpio_set_pin_mode(&mut self, pin_number: GPIO, pin_direction: PinMode) -> Result<(), E> {
         let mut temp_io_direction_register = self.read_register(Channel::A, 0xA)?;
         match pin_direction {
@@ -470,7 +473,7 @@ where
         self.read_register(channel, 0x08)
     }
 
-    pub fn write_byte(&mut self, channel: Channel, val: &u8) -> Result<(), E> {
+    fn write_byte(&mut self, channel: Channel, val: &u8) -> Result<(), E> {
         let mut tmp_line_status_register: u8 = 0;
         while (tmp_line_status_register & 0x20) == 0 {
             tmp_line_status_register = self.read_register(channel, 0x05)?;
@@ -478,15 +481,43 @@ where
         self.write_register(channel, 0x00, *val)
     }
 
-    pub fn read_byte(&mut self, channel: Channel) -> Result<Option<u8>, E> {
+    pub fn write(&mut self, channel: Channel, payload: &[u8]) -> Result<(), E> {
+        for byte in payload {
+            self.write_byte(channel, byte)?
+        }
+        Ok(())
+    }
+
+    fn read_byte(&mut self, channel: Channel) -> Result<Option<u8>, E> {
         if self.fifo_available_data(channel)? == 0 {
             //println!("No data");
             return Ok(None);
         }
-        // else if (self.fifo[channel as usize] > 0) {
-        //     --fifo_available[channel];
-        // }
         Ok(Some(self.read_register(channel, 0x00)?))
+    }
+
+    pub fn read(&mut self, channel: Channel, quanity: u8) -> Result<Vec<u8>, E> {
+        let mut buf_len: u8 = 0;
+        let mut buf: Vec<u8> = vec![];
+        if quanity > self.fifo_available_data(channel)? {
+            buf_len = self.fifo_available_data(channel)?;
+        }
+        for _ in 0..=buf_len {
+            if let Ok(Some(byte)) = self.read_byte(channel) {
+                buf.push(byte);
+            }
+        }
+        Ok(buf)
+    }
+
+    pub fn read_all(&mut self, channel: Channel) -> Result<Vec<u8>, E> {
+        let mut buf: Vec<u8> = vec![];
+        for _ in 0..=self.fifo_available_data(channel)? {
+            if let Ok(Some(byte)) = self.read_byte(channel) {
+                buf.push(byte);
+            }
+        }
+        Ok(buf)
     }
 
     pub fn enable_features(
