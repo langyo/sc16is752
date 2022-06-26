@@ -228,7 +228,7 @@ where
     }
 
     /// Initalises a single UART using UartConfig struct
-    pub fn initalise(&mut self, channel: Channel, config: UartConfig) -> Result<(), E> {
+    pub fn initalise_uart(&mut self, channel: Channel, config: UartConfig) -> Result<(), E> {
         self.fifo_enable(channel, true)?;
         self.set_baudrate(channel, config.baud)?;
         self.set_line(channel, config.word_length, config.parity, config.stop_bit)?;
@@ -270,15 +270,15 @@ where
         temp_line_control_register &= 0x7F;
         self.write_register(channel, 0x03, temp_line_control_register)?;
 
-        {
-            let actual_baudrate = (CRYSTAL_FREQ / prescaler as u32) / (16 * divisor);
-            let error = (actual_baudrate - baudrate) * 1000 / baudrate;
+        // {
+        //     let actual_baudrate = (CRYSTAL_FREQ / prescaler as u32) / (16 * divisor);
+        //     let error = (actual_baudrate - baudrate) * 1000 / baudrate;
 
-            println!("UART {channel}: Desired baudrate: {baudrate}");
-            println!("UART {channel}: Calculated divisor: {divisor}");
-            println!("UART {channel}: Actual baudrate: {actual_baudrate}");
-            println!("UART {channel}: Baudrate error: {error}");
-        }
+        //     println!("UART {channel}: Desired baudrate: {baudrate}");
+        //     println!("UART {channel}: Calculated divisor: {divisor}");
+        //     println!("UART {channel}: Actual baudrate: {actual_baudrate}");
+        //     println!("UART {channel}: Baudrate error: {error}");
+        // }
         Ok(())
     }
 
@@ -496,10 +496,10 @@ where
         Ok(Some(self.read_register(channel, 0x00)?))
     }
 
-    pub fn read(&mut self, channel: Channel, quanity: u8) -> Result<Vec<u8>, E> {
+    pub fn read(&mut self, channel: Channel, quantity: u8) -> Result<Vec<u8>, E> {
         let mut buf_len: u8 = 0;
         let mut buf: Vec<u8> = vec![];
-        if quanity > self.fifo_available_data(channel)? {
+        if quantity > self.fifo_available_data(channel)? {
             buf_len = self.fifo_available_data(channel)?;
         }
         for _ in 0..=buf_len {
