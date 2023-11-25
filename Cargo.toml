@@ -2,9 +2,14 @@
 name = "sc16is752"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["Rand <dint04wooded@icloud.com>"]
+description = "A crate for interfacing with the SC16IS752 I2C port expander. This lib provides access to both UARTs and GPIO lines" # Short description of your crate
+repository = "https://github.com/yourusername/sc16is752"
+license = "GPL-3.0"
+readme = "README.md"
+keywords = ["embedded", "hardware", "driver", "i2c", "port", "expander"]
+categories = ["embedded", "no-std"]                                                                                                 # Categories related to your crate
+homepage = "https://github.com/rand12345/sc16is752"                                                                                 # URL of your crate's homepage
 
 [dependencies]
 embedded-hal = "=1.0.0-alpha.8"
-# serial-core = "0.4.0"

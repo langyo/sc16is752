@@ -1,8 +1,3 @@
-// consider https://lib.rs/crates/serial-core for SerialPort trait
-// Datasheet https://www.nxp.com/docs/en/data-sheet/ SC16IS762.pdf
-// #![allow(dead_code)]
-// #![deny(missing_docs)]
-
 //!
 //! # Example
 //!
@@ -44,9 +39,7 @@
 //!     );
 //! ```
 
-use embedded_hal as hal;
 use embedded_hal::i2c::{blocking::I2c, Error};
-use hal::nb;
 
 const CRYSTAL_FREQ: u32 = 1843200;
 
