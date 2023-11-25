@@ -7,7 +7,7 @@ description = "A crate for interfacing with the SC16IS752 I2C port expander. Thi
 repository = "https://github.com/yourusername/sc16is752"
 license = "MIT"
 readme = "README.md"
-keywords = ["embedded", "hardware", "driver", "i2c", "port", "expander"]
+keywords = ["embedded", "hardware", "driver", "i2c", "expander"]
 categories = ["embedded", "no-std"]
 homepage = "https://github.com/rand12345/sc16is752"
 
