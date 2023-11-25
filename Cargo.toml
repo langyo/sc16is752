@@ -3,13 +3,13 @@ name = "sc16is752"
 version = "0.1.0"
 edition = "2021"
 authors = ["Rand <dint04wooded@icloud.com>"]
-description = "A crate for interfacing with the SC16IS752 I2C port expander. This lib provides access to both UARTs and GPIO lines" # Short description of your crate
+description = "A crate for interfacing with the SC16IS752 I2C port expander. This lib provides access to both UARTs and 8x GPIO lines"
 repository = "https://github.com/yourusername/sc16is752"
-license = "GPL-3.0"
+license = "MIT"
 readme = "README.md"
 keywords = ["embedded", "hardware", "driver", "i2c", "port", "expander"]
-categories = ["embedded", "no-std"]                                                                                                 # Categories related to your crate
-homepage = "https://github.com/rand12345/sc16is752"                                                                                 # URL of your crate's homepage
+categories = ["embedded", "no-std"]
+homepage = "https://github.com/rand12345/sc16is752"
 
 [dependencies]
 embedded-hal = "=1.0.0-alpha.8"

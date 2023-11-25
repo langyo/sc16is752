@@ -165,13 +165,13 @@ impl UartConfig {
     /// let config UartConfig::new(9600, 8, Parity::None, 1);
     pub fn new(baud: u32, word_length: u8, parity: Parity, stop_bit: u8) -> Self {
         Self {
-            /// Maximum baudrate is 115200
+            // Maximum baudrate is 115200
             baud,
-            /// 5, 6, 7 or 8 bits
+            // 5, 6, 7 or 8 bits
             word_length,
-            /// Use Parity enum
+            // Use Parity enum
             parity,
-            /// Use 0, 1 or 2 (insert table here)
+            // Use 0, 1 or 2 (insert table here)
             stop_bit,
         }
     }
@@ -206,7 +206,6 @@ where
     I2C: I2c<Error = E>,
 {
     pub fn new(device_address: u8, i2c: I2C) -> Result<Self, E> {
-        // Channel? Baud? Impl Defaults !!!!!!!!!!!!
         let mut address = device_address;
         if !(0x48..=0x57).contains(&device_address) {
             address = device_address >> 1
