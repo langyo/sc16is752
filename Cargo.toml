@@ -1,6 +1,6 @@
 [package]
 name = "sc16is752"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Rand <dint04wooded@icloud.com>"]
 description = "A no_std crate for interfacing with the SC16IS752 I2C port expander. This lib provides access to both UARTs and 8x GPIO lines"
