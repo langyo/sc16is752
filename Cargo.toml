@@ -1,15 +1,15 @@
 [package]
 name = "sc16is752"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 authors = ["Rand <dint04wooded@icloud.com>"]
-description = "A no_std crate for interfacing with the SC16IS752 I2C port expander. This lib provides access to both UARTs and 8x GPIO lines"
+description = "A no_std crate for interfacing with the SC16IS752 I2C/SPI port expander. This lib provides access to both UARTs and 8x GPIO lines"
 repository = "https://github.com/rand12345/sc16is752"
 license = "MIT"
 readme = "README.md"
-keywords = ["embedded", "hardware", "driver", "i2c", "expander"]
+keywords = ["embedded", "hardware", "driver", "i2c", "spi", "expander", "uart", "gpio"]
 categories = ["embedded", "no-std"]
 homepage = "https://rand12345.github.io"
 
 [dependencies]
-embedded-hal = "=1.0.0-alpha.8"
+embedded-hal = "1.0.0"
