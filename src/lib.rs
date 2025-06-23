@@ -3,7 +3,9 @@
 //!
 //! ```
 //!
-//! let mut device = SC16IS752::new(SC16IS750_ADDRESS, i2c)?;
+//! let mut device = SC16IS752::new(SC16IS752i2c::new(SC16IS750_ADDRESS, i2c))?;
+//! let mut device = SC16IS752::new(SC16IS752spi::new(spi_dev))?;
+//!
 //! device.initalise(Channel::A, UartConfig::default().baudrate(9600))?;
 //! device.gpio_set_pin_mode(GPIO::GPIO0, PinMode::Output)?;
 //! device.flush(Channel::A)?;
