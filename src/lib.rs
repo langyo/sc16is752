@@ -611,14 +611,12 @@ where
 
     pub fn write(&mut self, channel: Channel, payload: &[u8]) -> Result<usize, BUS::Error> {
         let space_left = self.fifo_available_space(channel)? as usize;
-        let mut buf_len = payload.len();
-        if buf_len > space_left {
-            buf_len = space_left
-        }
-        for i in 0..buf_len {
+        let len = payload.len().min(space_left);
+
+        for i in 0..len {
             self.write_byte(channel, &payload[i])?;
         }
-        Ok(buf_len)
+        Ok(len)
     }
 
     fn read_byte(&mut self, channel: Channel) -> Result<Option<u8>, BUS::Error> {
@@ -630,20 +628,15 @@ where
     }
 
     pub fn read(&mut self, channel: Channel, buf: &mut [u8]) -> Result<usize, BUS::Error> {
-        let mut buf_len = self.fifo_available_data(channel)? as usize;
-        let quantity = buf.len();
-        buf_len = if buf_len <= quantity {
-            buf_len
-        } else {
-            quantity
-        };
+        let available = self.fifo_available_data(channel)? as usize;
+        let len = buf.len().min(available);
 
-        for i in 0..=buf_len {
+        for i in 0..len {
             if let Ok(Some(byte)) = self.read_byte(channel) {
                 buf[i] = byte;
             }
         }
-        Ok(buf_len)
+        Ok(len)
     }
 
     pub fn enable_features(
