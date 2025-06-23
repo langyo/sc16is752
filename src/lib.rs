@@ -44,8 +44,6 @@
 use embedded_hal::i2c::I2c;
 use embedded_hal::spi::SpiDevice;
 
-const CRYSTAL_FREQ: u32 = 1843200;
-
 /// UARTs Channel A (TXA/RXA) and Channel B (TXB/RXB)
 #[derive(Debug, Copy, Clone)]
 #[repr(u8)]
@@ -323,6 +321,7 @@ where
     BUS: Bus,
 {
     bus: BUS,
+    xtal_freq: u32,
     fifo: [u8; 2],
     peek_flags: [bool; 2],
     peek_buf: [Option<u8>; 2],
@@ -332,9 +331,10 @@ impl<BUS> SC16IS752<BUS>
 where
     BUS: Bus,
 {
-    pub fn new(bus: BUS) -> Self {
+    pub fn new(bus: BUS, xtal_freq: u32) -> Self {
         Self {
             bus,
+            xtal_freq,
             fifo: [0u8; 2],
             peek_flags: [false; 2],
             peek_buf: [None; 2],
@@ -371,15 +371,18 @@ where
             0 => 1,
             _ => 4,
         };
-        let divisor = (CRYSTAL_FREQ / prescaler as u32) / (baudrate * 16);
+        let divisor = (self.xtal_freq / prescaler as u32) / (baudrate * 16);
 
         let mut temp_line_control_register = self.read_register(channel, Registers::LCR)?;
+
+        // Move to special register mode where RhrThr is DLL and IER is DLH registers.
         temp_line_control_register |= 0x80;
         self.write_register(channel, Registers::LCR, temp_line_control_register)?;
 
         self.write_register(channel, Registers::RhrThr, divisor.try_into().unwrap())?;
         self.write_register(channel, Registers::IER, (divisor >> 8).try_into().unwrap())?;
 
+        // Move out of special register mode
         temp_line_control_register &= 0x7F;
         self.write_register(channel, Registers::LCR, temp_line_control_register)?;
 
